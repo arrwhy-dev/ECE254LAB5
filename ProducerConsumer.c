@@ -27,10 +27,10 @@ sem_t count;
 sem_t buff_size;
 sem_t prod_num;
 sem_t con_num;
+int buffer_size;
 
 int main(int argc, char **argv) {
 
-	int buffer_size;
 	int producer_count;
 	int consumer_count;
 	int production_count;
@@ -41,30 +41,27 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//threading code.
-
 	buffer = NULL;
 
-	//init yo sems.
 	sem_init(&buff_lock, 0, 1);
 	sem_init(&count, 0, 0);
 	sem_init(&buff_size, 0, 3);
 	sem_init(&prod_num, 0, production_count);
-	sem_init(&con_num, 0, producer_count);
+	sem_init(&con_num, 0, production_count);
 
 	pthread_t producer_ids[producer_count];
 	pthread_t consumer_ids[consumer_count];
 
-	int h;
+	int producer_id;
 
-	for (h = 0; h < producer_count; ++h) {
-		producer_ids[h] = spawn_producer();
+	for (producer_id = 0; producer_id < producer_count; ++producer_id) {
+		producer_ids[producer_id] = spawn_producer(producer_id);
 	}
 
-	int q;
+	int consumer_id;
 
-	for (q = 0; q < consumer_count; ++q) {
-		consumer_ids[q] = spawn_consumer();
+	for (consumer_id = 0; consumer_id < consumer_count; ++consumer_id) {
+		consumer_ids[consumer_id] = spawn_consumer(consumer_id);
 	}
 
 	int i;
@@ -91,32 +88,46 @@ int process_arguments(int argc, char* argv[], int * queue_size,
 	*consumer_count = atoi(argv[4]);
 	return 0;
 }
-/*
- void add_to_buffer(int x) {
 
- pthread_t thread_id = pthread_self();
- printf("adding from thread %i\n", thread_id);
- if (buffer == NULL) {
- buffer = malloc(sizeof(struct queue_element));
- buffer->value = x;
- buffer->next = NULL;
- printf("added the value %i as the list head\n", x);
- } else {
- struct queue_element* next_job = malloc(sizeof(struct queue_element));
- next_job->next = buffer;
- next_job->value = x;
- buffer = next_job;
- printf("appended the value %i as the list head\n", x);
- }
+pthread_t spawn_producer(int producer_id) {
 
- }
+	pthread_t p_id;
+	pthread_create(&p_id, NULL, &producer, &producer_id);
+	return p_id;
+}
 
- */
+pthread_t spawn_consumer(int consumer_id) {
+	pthread_t p_id;
+	pthread_create(&p_id, NULL, &consumer, &consumer_id);
+	return p_id;
+}
 
-void consume_from_queue() {
+void add_to_buffer(int * p_id) {
 
-	pthread_t thread_id = pthread_self();
-	printf("consume from thread %i\n", (int) thread_id);
+	int i = (rand() % 80) + 1;
+
+	int value = (buffer_size * i) + *p_id;
+
+	printf("Producer %i produced %i\n", *p_id, value);
+
+	if (buffer == NULL) {
+		buffer = malloc(sizeof(struct queue_element));
+		buffer->value = value;
+		buffer->next = NULL;
+		printf("producer %i added %i as list head\n",*p_id ,value);
+	} else {
+		struct queue_element* next_job = malloc(sizeof(struct queue_element));
+		next_job->next = buffer;
+		next_job->value = value;
+		buffer = next_job;
+		printf("producer %i added %i \n",*p_id, value);
+
+	}
+}
+
+//This is called from the consumer.
+
+void consume_from_buffer(int * c_id) {
 
 	if (buffer == NULL) {
 		printf("failed to read from queue, queue is empty\n");
@@ -126,35 +137,8 @@ void consume_from_queue() {
 		int val = current_element->value;
 		buffer = buffer->next;
 		free(current_element);
-		printf("obtained %i from the queue\n", val);
+		printf("consumer %i consumed %i\n", *c_id, val);
 	}
-
-}
-
-pthread_t spawn_producer() {
-
-	pthread_t p_id;
-	pthread_create(&p_id, NULL, &producer, NULL);
-	return p_id;
-}
-
-pthread_t spawn_consumer() {
-	pthread_t p_id;
-	pthread_create(&p_id, NULL, &consumer, NULL);
-	return p_id;
-}
-
-void add_to_buffer() {
-
-	int i = rand();
-	pthread_t thread_id = pthread_self();
-	printf("I am producer %i and I produced %i\n", (int) thread_id, i);
-
-}
-
-void consume_from_buffer() {
-	pthread_t thread_id = pthread_self();
-	printf("I am consumer %i and I consumed some garbage\n", (int) thread_id);
 
 }
 
@@ -166,12 +150,14 @@ void* producer(void* unused) {
 		if (sem_trywait(&prod_num)) {
 			break;
 		}
+
 		//do we have room for stuff?
 		sem_wait(&buff_size);
 		// trigger the lock
 		sem_wait(&buff_lock);
 		//put some stuff in the buffer
-		add_to_buffer();
+		int * p_id = (int*) unused;
+		add_to_buffer(p_id);
 		//trigger unlock
 		sem_post(&buff_lock);
 		//let them now we put some stuff
@@ -188,12 +174,14 @@ void* consumer(void* unused) {
 		if (sem_trywait(&con_num)) {
 			break;
 		}
+
 		//if more stuff avaliable?
 		sem_wait(&count);
 		//trigger the lock
 		sem_wait(&buff_lock);
 		//take some stuff
-		consume_from_buffer();
+		int* c_id = (int*) unused;
+		consume_from_buffer(c_id);
 		//trigger the unlock
 		sem_post(&buff_lock);
 		//let them know theres space
