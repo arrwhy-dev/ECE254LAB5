@@ -56,8 +56,10 @@ int main(int argc, char **argv) {
 	int producer_id;
 
 	double time_before_first_thread_created = get_time_in_seconds();
+	
 	for (producer_id = 0; producer_id < producer_count; ++producer_id) {
 		producer_ids[producer_id] = spawn_producer(producer_id);
+		printf("created producer with pid %i\n",producer_ids[producer_id]);
 	}
 
 	int consumer_id;
@@ -82,6 +84,9 @@ int main(int argc, char **argv) {
 	sem_destroy(&buff_size);
 	sem_destroy(&prod_num);
 	sem_destroy(&con_num);
+	
+	
+	printf("main thread exited\n");
 
 	return 0;
 }
@@ -151,11 +156,11 @@ void consume_from_buffer(int * c_id) {
 		free(current_element);
 		printf("consumer %i consumed %i\n", *c_id, val);
 
-		double root = sqrt(val);
-		double temp = root * root;
+		int root = sqrt(val);
+		int temp = root * root;
 		if(temp == val)
 		{
-			printf("%i %f %i\n",*c_id,root,val);
+			printf("%i %i %i\n",*c_id,root,val);
 		}
 
 	}
@@ -165,7 +170,7 @@ void consume_from_buffer(int * c_id) {
 void* producer(void* unused) {
 	srand(time(NULL));
 	while (1) {
-
+	
 		//do we need to make more stuff?
 		if (sem_trywait(&prod_num)) {
 			break;
@@ -183,6 +188,7 @@ void* producer(void* unused) {
 		//let them know we put some stuff
 		//in the buffer.
 		sem_post(&count);
+		
 	}
 	return NULL;
 }
@@ -190,6 +196,8 @@ void* producer(void* unused) {
 void* consumer(void* unused) {
 
 	while (1) {
+	  
+	
 		//are we expecting more stuff?
 		if (sem_trywait(&con_num)) {
 			break;
