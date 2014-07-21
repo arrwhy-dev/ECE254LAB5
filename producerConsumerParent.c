@@ -51,9 +51,6 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//create semaphore for producers and consumers
-	//used to determine if producers and consumer need to 
-	//keep performing tasks.
 
 	sem_t *consumer_sem = sem_open("consumer_sem", O_RDWR | O_CREAT,
 			permissions, message_count);
@@ -71,21 +68,18 @@ int main(int argc, char **argv) {
 	    spawn_child("./producer", argv,i,num_producers);
 	}
 
-	int h;
-	for (h = 0; h < num_consumers; ++h) {
+	int j;
+	for (j = 0; j < num_consumers; ++j) {
 
-	    spawn_child("./consumer", argv,h,num_consumers);
+	    spawn_child("./consumer", argv,j,num_consumers);
 	}
 
 
-	//wait on all child processes to finish
 	int status, pid;
 
-	while ((pid = wait(&status)) != -1)	
-	{
-		//for debugging
-		//fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
-	}
+	//Wait on all child processes to complete
+	while ((pid = wait(&status)) != -1){}
+	
 	
 	double time_after_last_consumed = get_time_in_seconds();
 	
@@ -117,20 +111,8 @@ int main(int argc, char **argv) {
 		exit(3);
 	}
 	
-	//printf("Parent exited\n");
-
 	return 0;
 
-}
-
-int process_arguments(int argc, char* argv[], int * queue_size,
-		int * message_count, int * producer_count, int * consumer_count) {
-
-	*message_count = atoi(argv[1]);
-	*queue_size = atoi(argv[2]);
-	*producer_count = atoi(argv[3]);
-	*consumer_count = atoi(argv[4]);
-	return 0;
 }
 
 int spawn_child(char* program, char **arg_list,int p_id,int childCount) {

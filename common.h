@@ -17,4 +17,7 @@
 //global queue_name
 extern const char* queue_name;
 
+int process_arguments(int argc, char* argv[], int * queue_size,
+		int * message_count, int * producer_count, int * consumer_count);
+
 #endif

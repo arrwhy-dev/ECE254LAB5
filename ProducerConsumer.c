@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "producerConsumer.h"
+#include "common.h"
 
 struct queue_element {
 	int value;
@@ -91,15 +92,6 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-int process_arguments(int argc, char* argv[], int * queue_size,
-		int * production_count, int * producer_count, int * consumer_count) {
-
-	*production_count = atoi(argv[1]);
-	*queue_size = atoi(argv[2]);
-	*producer_count = atoi(argv[3]);
-	*consumer_count = atoi(argv[4]);
-	return 0;
-}
 
 pthread_t spawn_producer(int producer_id) {
 
