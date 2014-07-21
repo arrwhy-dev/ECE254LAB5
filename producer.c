@@ -39,10 +39,10 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	sem_t *production_count;
-	production_count = sem_open("prod_count", 0);
+	sem_t *producer_sem;
+	producer_sem = sem_open("producer_sem", 0);
 
-	if (production_count == SEM_FAILED) {
+	if (producer_sem == SEM_FAILED) {
 		printf("there was an error opening the semaphore in the producer");
 		printf("the error is %s \n", strerror(errno));
 		return 1;
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 	while(1)
 	{
 	  
-	  if(sem_trywait(production_count))
+	  if(sem_trywait(producer_sem))
 	  {
 	    break; 
 	  }
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
-	if (sem_close(production_count) == -1) {
+	if (sem_close(producer_sem) == -1) {
 		perror("failed to close semaphore in producer");
 		exit(2);
 	}

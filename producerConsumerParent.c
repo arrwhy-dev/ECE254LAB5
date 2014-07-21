@@ -54,16 +54,17 @@ int main(int argc, char **argv) {
 	//create semaphore for the producers and consumers
 	//these are used to determine if they need to consumer or pdocuer.
 
-	sem_t *production_sem = sem_open("prod_count", O_RDWR | O_CREAT,
-			permissions, production_count);
-	sem_t *consumption_sem = sem_open("cons_count", O_RDWR | O_CREAT,
+	sem_t *producer_sem = sem_open("producer_sem", O_RDWR | O_CREAT,
 			permissions, production_count);
 
-	if (production_sem == SEM_FAILED) {
-		printf("failed to create the production sem\n");
+	sem_t *consumer_sem = sem_open("consumer_sem", O_RDWR | O_CREAT,
+			permissions, production_count);
+
+	if (producer_sem == SEM_FAILED) {
+		printf("failed to create the producer sem\n");
 	}
-	if (consumption_sem == SEM_FAILED) {
-		printf("failed to created consumption sem\n");
+	if (consumer_sem == SEM_FAILED) {
+		printf("failed to created consumer sem\n");
 	}
 
 	double time_before_fork;
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
 
 	//spawn the producers.
 	int i;
-	for (i = 0; i < num_producers; ++i) {
+	for (i = 1; i <= num_producers; ++i) {
 
 		pid_t child_pid = spawn_child("./producer", argv, queue_descriptor,
 				&time_before_fork);
@@ -86,7 +87,7 @@ int main(int argc, char **argv) {
 
 	//spawn the consumers
 	int h;
-	for (h = 0; h < num_consumers; ++h) {
+	for (h = 1; h <= num_consumers; ++h) {
 
 		pid_t child_pid = spawn_child("./consumer", argv, queue_descriptor,
 				&time_before_fork);
@@ -100,14 +101,14 @@ int main(int argc, char **argv) {
 	//wait on the producers.
 	int j;
 	int producer_child_status;
-	for (j = 0; j < num_producers; ++j) {
+	for (j = 1; j <= num_producers; ++j) {
 		waitpid(pids[j], &producer_child_status, 0);
 	}
 
 	//wait on the consumers.
 	int k;
 	int consumer_child_status;
-	for (k = 0; k < num_producers; ++k) {
+	for (k = 1; k <= num_producers; ++k) {
 		waitpid(cids[k], &consumer_child_status, 0);
 	}
 
@@ -126,21 +127,22 @@ int main(int argc, char **argv) {
 	}
 
 	printf("the parent killed the queue!\n");
-	if (sem_close(production_sem) == -1) {
+	
+	if (sem_close(producer_sem) == -1) {
 		perror("producer semaphore failed to close");
 		exit(2);
 	}
 
-	if (sem_close(consumption_sem) == -1) {
-		perror("consumption semaphore failed to close");
+	if (sem_close(consumer_sem) == -1) {
+		perror("consumer semaphore failed to close");
 		exit(2);
 	}
 
-	if (sem_unlink("prod_count") == -1) {
+	if (sem_unlink("producer_sem") == -1) {
 		perror("failed to unlink producer semaphore");
 		exit(3);
 	}
-	if (sem_unlink("cons_count") == -1) {
+	if (sem_unlink("consumer_sem") == -1) {
 		perror("failed to unlink consumer semaphore");
 		exit(3);
 	}
@@ -159,8 +161,7 @@ int process_arguments(int argc, char* argv[], int * queue_size,
 	return 0;
 }
 
-int spawn_child(char* program, char **arg_list, mqd_t queue_descriptor,
-		double * fork_time) {
+int spawn_child(char* program, char **arg_list,double * fork_time) {
 
 	arg_list[0] = program;
 	pid_t child_pid;

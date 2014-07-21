@@ -39,10 +39,10 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	sem_t *consumption_count;
-	consumption_count = sem_open("cons_count", 0);
+	sem_t *consumer_sem;
+	consumer_sem = sem_open("consumer_sem", 0);
 
-	if (consumption_count == SEM_FAILED) {
+	if (consumer_sem == SEM_FAILED) {
 		printf("there was an error opening the semaphore in the consumer");
 		printf("the error is %s \n", strerror(errno));
 		return 1;
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 	while(1)
 	{
 	  
-	  if(sem_trywait(consumption_count))
+	  if(sem_trywait(consumer_sem))
 	  {
 	    break; 
 	  }
