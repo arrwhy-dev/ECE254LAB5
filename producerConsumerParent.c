@@ -78,8 +78,8 @@ int main(int argc, char **argv) {
 	printf("p: the consumer sem val is %i\n",semval2);
 	
 
-	pid_t pids[num_producers];
-	pid_t cids[num_consumers];
+	//pid_t pids[num_producers];
+	//pid_t cids[num_consumers];
 
 	//spawn the producers.
 	int i;
@@ -105,6 +105,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
+
+/*
 	//wait on the producers.
 	int j;
 	int producer_child_status;
@@ -117,6 +119,17 @@ int main(int argc, char **argv) {
 	int consumer_child_status;
 	for (k = 0; k < num_producers; ++k) {
 		waitpid(cids[k], &consumer_child_status, 0);
+	}
+
+*/
+
+
+	//wait on all child processes to finish
+	int status, pid;
+
+	while ((pid = wait(&status)) != -1)	
+	{
+		fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
 	}
 
 	//Tidy up queues and semaphores
