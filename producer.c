@@ -19,19 +19,8 @@
 
 int main(int argc, char **argv) {
 
-	int queue_size = atoi(argv[2]);
-	int messages_to_consume = atoi(argv[1]);
-
-	struct mq_attr queue_attributes;
-	queue_attributes.mq_maxmsg = queue_size;
-	queue_attributes.mq_msgsize = sizeof(int);
-	queue_attributes.mq_flags = 0;
-
 	mqd_t queue_descriptor;
-	mode_t permissions = S_IRUSR | S_IWUSR;
-
-	queue_descriptor = mq_open(queue_name, O_RDONLY, permissions,
-			&queue_attributes);
+	queue_descriptor = mq_open(queue_name, O_RDWR);
 
 	if (queue_descriptor == -1) {
 		printf("there was an error opening the queue in the consumer");
@@ -50,11 +39,17 @@ int main(int argc, char **argv) {
 
 	printf("Printing from the producer with pid %d\n", getpid());
 	
+	int semval;
+	sem_getvalue(producer_sem,&semval);
+	printf("producer sem val is %i\n",semval);
+	
+	
 	while(1)
 	{
 	  
-	  if(sem_trywait(producer_sem))
+	  if(sem_trywait(producer_sem) == -1)
 	  {
+	    printf("sem toggle in producer exiting while loop\n");
 	    break; 
 	  }
 	  
@@ -66,6 +61,9 @@ int main(int argc, char **argv) {
 		printf("failed to send message %s \n", strerror(errno));
 		return 1;
 
+	  }else
+	  {
+	      printf("send message %i\n",message);
 	  }
 	  
 	}
@@ -80,6 +78,8 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
+         printf("exiting the producer with pid %d\n", getpid());
+
 
 	return 0;
 

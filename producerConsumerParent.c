@@ -56,28 +56,36 @@ int main(int argc, char **argv) {
 
 	sem_t *producer_sem = sem_open("producer_sem", O_RDWR | O_CREAT,
 			permissions, production_count);
-
+	
 	sem_t *consumer_sem = sem_open("consumer_sem", O_RDWR | O_CREAT,
 			permissions, production_count);
+	
 
 	if (producer_sem == SEM_FAILED) {
-		printf("failed to create the producer sem\n");
+		printf("failed to create the production sem\n");
 	}
 	if (consumer_sem == SEM_FAILED) {
-		printf("failed to created consumer sem\n");
+		printf("failed to created consumption sem\n");
 	}
 
-	double time_before_fork;
+	
+	int semval1;
+	int semval2;
+	
+	sem_getvalue(producer_sem,&semval1);
+	sem_getvalue(consumer_sem,&semval2);
+	printf("p:the producer sem val is %i\n",semval1);
+	printf("p: the consumer sem val is %i\n",semval2);
+	
 
 	pid_t pids[num_producers];
 	pid_t cids[num_consumers];
 
 	//spawn the producers.
 	int i;
-	for (i = 1; i <= num_producers; ++i) {
+	for (i = 0; i < num_producers; ++i) {
 
-		pid_t child_pid = spawn_child("./producer", argv, queue_descriptor,
-				&time_before_fork);
+		pid_t child_pid = spawn_child("./producer", argv);
 
 		if (child_pid != -1) {
 			pids[i] = child_pid;
@@ -87,10 +95,9 @@ int main(int argc, char **argv) {
 
 	//spawn the consumers
 	int h;
-	for (h = 1; h <= num_consumers; ++h) {
+	for (h = 0; h < num_consumers; ++h) {
 
-		pid_t child_pid = spawn_child("./consumer", argv, queue_descriptor,
-				&time_before_fork);
+		pid_t child_pid = spawn_child("./consumer", argv);
 
 		if (child_pid != -1) {
 			cids[i] = child_pid;
@@ -101,14 +108,14 @@ int main(int argc, char **argv) {
 	//wait on the producers.
 	int j;
 	int producer_child_status;
-	for (j = 1; j <= num_producers; ++j) {
+	for (j = 0; j < num_producers; ++j) {
 		waitpid(pids[j], &producer_child_status, 0);
 	}
 
 	//wait on the consumers.
 	int k;
 	int consumer_child_status;
-	for (k = 1; k <= num_producers; ++k) {
+	for (k = 0; k < num_producers; ++k) {
 		waitpid(cids[k], &consumer_child_status, 0);
 	}
 
@@ -127,14 +134,13 @@ int main(int argc, char **argv) {
 	}
 
 	printf("the parent killed the queue!\n");
-	
 	if (sem_close(producer_sem) == -1) {
 		perror("producer semaphore failed to close");
 		exit(2);
 	}
 
 	if (sem_close(consumer_sem) == -1) {
-		perror("consumer semaphore failed to close");
+		perror("consumption semaphore failed to close");
 		exit(2);
 	}
 
@@ -161,7 +167,7 @@ int process_arguments(int argc, char* argv[], int * queue_size,
 	return 0;
 }
 
-int spawn_child(char* program, char **arg_list,double * fork_time) {
+int spawn_child(char* program, char **arg_list) {
 
 	arg_list[0] = program;
 	pid_t child_pid;

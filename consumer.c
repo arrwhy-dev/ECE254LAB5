@@ -19,17 +19,7 @@
 
 int main(int argc, char **argv) {
 
-	int queue_size = atoi(argv[2]);
-	int messages_to_consume = atoi(argv[1]);
 	
-	printf("in the consumer: queue size is %i\n",queue_size);
-	printf("in the consumer: messages to consume is %i\n",messages_to_consume);
-
-	struct mq_attr queue_attributes;
-	queue_attributes.mq_maxmsg = queue_size;
-	queue_attributes.mq_msgsize = sizeof(int);
-	queue_attributes.mq_flags = 0;
-
 	mqd_t queue_descriptor;
 	queue_descriptor = mq_open(queue_name, O_RDONLY);
 
@@ -50,12 +40,17 @@ int main(int argc, char **argv) {
 
 	printf("Printing from the consumer with pid %d\n", getpid());
 	
+	int semval;
+	sem_getvalue(consumer_sem,&semval);
+	
+	printf("consumer sem value is %i\n",semval);
 
 	while(1)
 	{
 	  
-	  if(sem_trywait(consumer_sem))
+	  if(sem_trywait(consumer_sem) == -1)
 	  {
+	    printf("sem toggled in consumer exiting while loop\n");
 	    break; 
 	  }
 	
@@ -69,6 +64,7 @@ int main(int argc, char **argv) {
 		} else 
 		{
 			printf("%i is consumed\n", message);
+		        fflush(stdout);
 		}
 
 	}
@@ -76,6 +72,8 @@ int main(int argc, char **argv) {
 		perror("mq_close failed");
 		exit(2);
 	}
+	
+	printf("exiting consumer with pid %d\n", getpid());
 
 	return 0;
 
