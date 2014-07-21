@@ -1,5 +1,5 @@
 /*
- * consumer.c
+ * producer.c
  * ECE254 Group 01
  * By : Rushan Yogaratnam and Ameen Patel
  * University of Waterloo Computer Engineering
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   
   
   	int pid = atoi(argv[1]);
-	int producerCount = atoi(argv[2]);
+	int producer_count = atoi(argv[2]);
 	
 	printf("P: assigned pid  %d to %i \n",pid,getpid());
 
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	queue_descriptor = mq_open(queue_name, O_RDWR);
 
 	if (queue_descriptor == -1) {
-		printf("error opening queue in consumer %s\n",strerror(errno));
+		printf("error opening queue in producer %s\n",strerror(errno));
 		return 1;
 	}
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 	sem_getvalue(producer_sem,&semval);
 	printf("P: sem %i\n",semval);
 	
-	
+	int counter =0;
 	while(1)
 	{
 	  
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 	  
 	 printf("P: pid %d to send \n", getpid());
 
-	  int message = produce_message(pid,producerCount);
+	  int message = produce_message(pid,producer_count,counter);
 	  if (mq_send(queue_descriptor, (char*) &message, sizeof(int), 0) == -1) 
 	  {
 		printf("P: pid %d send failed %s \n",getpid(), strerror(errno));
@@ -92,9 +92,9 @@ int main(int argc, char **argv) {
 
 }
 
-int produce_message(int pid,int numProducers)
+int produce_message(int pid,int numProducers,int value)
 {
     int i = (rand() % 80) + 1;
-	int value = (numProducers * i) + pid;
+	int value = (numProducers * value) + pid;
 	return value;
 }

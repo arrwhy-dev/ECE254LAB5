@@ -25,11 +25,11 @@
 int main(int argc, char **argv) {
 
 	int queue_size;
-	int production_count;
+	int message_count;
 	int num_producers;
 	int num_consumers;
 
-	if (process_arguments(argc, argv, &queue_size, &production_count,
+	if (process_arguments(argc, argv, &queue_size, &message_count,
 			&num_producers, &num_consumers)) {
 		printf("Invalid arguments\n");
 		return 1;
@@ -47,28 +47,29 @@ int main(int argc, char **argv) {
 			&queue_attributes);
 
 	if (queue_descriptor == -1) {
-		printf("error creating the queue %s\n", strerror(errno));
+		printf("error creating queue %s\n", strerror(errno));
 		return 1;
 	}
 
-	//create semaphore for the producers and consumers
-	//these are used to determine if they need to consumer or pdocuer.
+	//create semaphore for producers and consumers
+	//used to determine if producers and consumer need to 
+	//keep performing tasks.
 
 	sem_t *producer_sem = sem_open("producer_sem", O_RDWR | O_CREAT,
-			permissions, production_count);
+			permissions, message_count);
 	
 	sem_t *consumer_sem = sem_open("consumer_sem", O_RDWR | O_CREAT,
-			permissions, production_count);
+			permissions, message_count);
 	
 
 	if (producer_sem == SEM_FAILED) {
-		printf("failed to create the production sem\n");
+		printf("failed to create producer semaphore\n");
 	}
 	if (consumer_sem == SEM_FAILED) {
-		printf("failed to created consumption sem\n");
+		printf("failed to create consumer semaphore\n");
 	}
 
-	
+	//used for debugging
 	int semval1;
 	int semval2;
 	
@@ -78,7 +79,8 @@ int main(int argc, char **argv) {
 	printf(" the consumer sem val is %i\n",semval2);
 	
 
-       double time_before_first_fork = get_time_in_seconds();
+    double time_before_first_fork = get_time_in_seconds();
+
 	int i;
 	for (i = 0; i < num_producers; ++i) {
 
@@ -97,7 +99,8 @@ int main(int argc, char **argv) {
 
 	while ((pid = wait(&status)) != -1)	
 	{
-		fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
+		//for debugging
+		fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status);
 	}
 	
 	double time_after_last_consumed = get_time_in_seconds();
@@ -107,13 +110,13 @@ int main(int argc, char **argv) {
 
 	//Tidy up queues and semaphores
 
-	//close the queue.
+	//close queue.
 	if (mq_close(queue_descriptor) == -1) {
 		perror("mq_close failed");
 		exit(2);
 	}
 
-	//mark the queue for deletion.
+	//mark queue for deletion.
 	if (mq_unlink(queue_name) != 0) {
 		perror("mq_unlink failed");
 		exit(3);
@@ -146,9 +149,9 @@ int main(int argc, char **argv) {
 }
 
 int process_arguments(int argc, char* argv[], int * queue_size,
-		int * production_count, int * producer_count, int * consumer_count) {
+		int * message_count, int * producer_count, int * consumer_count) {
 
-	*production_count = atoi(argv[1]);
+	*message_count = atoi(argv[1]);
 	*queue_size = atoi(argv[2]);
 	*producer_count = atoi(argv[3]);
 	*consumer_count = atoi(argv[4]);
@@ -159,7 +162,7 @@ int spawn_child(char* program, char **arg_list,int p_id,int childCount) {
 
 
 	arg_list[0] = program;
-        char pid [15];
+    char pid [15];
 	sprintf(pid,"%d",p_id);
 	char consumerCount [15];
 	sprintf(consumerCount,"%d",childCount);
@@ -173,7 +176,7 @@ int spawn_child(char* program, char **arg_list,int p_id,int childCount) {
 	if (child_pid > 0) {
 		return child_pid;
 	} else if (child_pid < 0) {
-		printf("error creating the child process %s\n", strerror(errno));
+		printf("error creating child process %s\n", strerror(errno));
 		return -1;
 	} else {
 		execvp(program, arg_list);

@@ -40,6 +40,6 @@ int spawn_child(char*, char **,int,int);
 //this creates elements and sends them to the msg queue.
 void produce_and_send_elements(int, mqd_t);
 
-int produce_message(int pid,int numProducers);
+int produce_message(int pid,int numProducers, int value);
 
 #endif /* PRODUCER_H_ */
