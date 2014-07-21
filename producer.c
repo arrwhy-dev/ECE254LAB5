@@ -95,6 +95,6 @@ int main(int argc, char **argv) {
 int produce_message(int pid,int numProducers,int value)
 {
     int i = (rand() % 80) + 1;
-	int value = (numProducers * value) + pid;
-	return value;
+	int message = (numProducers * value) + pid;
+	return message;
 }
