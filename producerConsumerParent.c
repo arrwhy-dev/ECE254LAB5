@@ -74,57 +74,22 @@ int main(int argc, char **argv) {
 	
 	sem_getvalue(producer_sem,&semval1);
 	sem_getvalue(consumer_sem,&semval2);
-	printf("p:the producer sem val is %i\n",semval1);
-	printf("p: the consumer sem val is %i\n",semval2);
+	printf("the producer sem val is %i\n",semval1);
+	printf(" the consumer sem val is %i\n",semval2);
 	
 
-	//pid_t pids[num_producers];
-	//pid_t cids[num_consumers];
-
-	//spawn the producers.
+       double time_before_first_fork = get_time_in_seconds();
 	int i;
 	for (i = 0; i < num_producers; ++i) {
 
-		pid_t child_pid = spawn_child("./producer", argv);
-/*
-		if (child_pid != -1) {
-			pids[i] = child_pid;
-
-		}
-*/
+		 spawn_child("./producer", argv,i,num_producers);
 	}
 
-	//spawn the consumers
 	int h;
 	for (h = 0; h < num_consumers; ++h) {
 
-		pid_t child_pid = spawn_child("./consumer", argv);
-
-/*
-		if (child_pid != -1) {
-			cids[i] = child_pid;
-
-		}
-*/
+	    spawn_child("./consumer", argv,h,num_consumers);
 	}
-
-
-/*
-	//wait on the producers.
-	int j;
-	int producer_child_status;
-	for (j = 0; j < num_producers; ++j) {
-		waitpid(pids[j], &producer_child_status, 0);
-	}
-
-	//wait on the consumers.
-	int k;
-	int consumer_child_status;
-	for (k = 0; k < num_producers; ++k) {
-		waitpid(cids[k], &consumer_child_status, 0);
-	}
-
-*/
 
 
 	//wait on all child processes to finish
@@ -134,6 +99,11 @@ int main(int argc, char **argv) {
 	{
 		fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
 	}
+	
+	double time_after_last_consumed = get_time_in_seconds();
+	
+	double execution_time = time_after_last_consumed - time_before_first_fork;
+	printf("System execution time: %f seconds\n",execution_time);
 
 	//Tidy up queues and semaphores
 
@@ -168,6 +138,8 @@ int main(int argc, char **argv) {
 		perror("failed to unlink consumer semaphore");
 		exit(3);
 	}
+	
+	printf("Parent exited\n");
 
 	return 0;
 
@@ -183,11 +155,19 @@ int process_arguments(int argc, char* argv[], int * queue_size,
 	return 0;
 }
 
-int spawn_child(char* program, char **arg_list) {
+int spawn_child(char* program, char **arg_list,int p_id,int childCount) {
+
 
 	arg_list[0] = program;
+        char pid [15];
+	sprintf(pid,"%d",p_id);
+	char consumerCount [15];
+	sprintf(consumerCount,"%d",childCount);
+	
+	arg_list[1] = &pid;
+	arg_list[2] = &consumerCount;
+	
 	pid_t child_pid;
-
 	child_pid = fork();
 
 	if (child_pid > 0) {

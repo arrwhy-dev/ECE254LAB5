@@ -18,6 +18,11 @@
 #include "common.h"
 
 int main(int argc, char **argv) {
+  
+  
+  
+  	int pid = atoi(argv[1]);
+	printf("c: assigned pid  %d to %i \n",pid,getpid());
 
 	
 	mqd_t queue_descriptor;
@@ -36,23 +41,23 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	printf("Printing from the consumer with pid %d\n", getpid());
+	printf("C: spawned pid %d\n", getpid());
 	
 	int semval;
 	sem_getvalue(consumer_sem,&semval);
 	
-	printf("consumer sem value is %i\n",semval);
+	printf("C: sem value  %i\n",semval);
 
 	while(1)
 	{
 	  
 	  if(sem_trywait(consumer_sem) == -1)
 	  {
-	    printf("sem toggled in consumer exiting while loop\n");
+	    printf("C: sem toggled\n");
 	    break; 
 	  }
 	
-		 printf("Printing from the consumer with pid %d inside while loop \n", getpid());
+		 printf("C: pid %d to recieve \n", getpid());
 
 		  int message;
 		  if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)== -1) 
@@ -61,7 +66,7 @@ int main(int argc, char **argv) {
 			  return 1;
 		} else 
 		{
-			printf("%i is consumed\n", message);
+			printf("C: pid %i consumed %i \n",getpid(), message);
 		        fflush(stdout);
 		}
 
@@ -71,7 +76,7 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
-	printf("exiting consumer with pid %d\n", getpid());
+	printf("C: pid %d exiting\n", getpid());
 
 	return 0;
 

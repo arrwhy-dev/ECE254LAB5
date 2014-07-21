@@ -15,9 +15,16 @@
 #include <errno.h>
 #include <semaphore.h>
 #include <string.h>
+#include "producer.h"
 #include "common.h"
 
 int main(int argc, char **argv) {
+  
+  
+  	int pid = atoi(argv[1]);
+	int producerCount = atoi(argv[2]);
+	
+	printf("P: assigned pid  %d to %i \n",pid,getpid());
 
 	mqd_t queue_descriptor;
 	queue_descriptor = mq_open(queue_name, O_RDWR);
@@ -27,6 +34,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+
+	
 	sem_t *producer_sem;
 	producer_sem = sem_open("producer_sem", 0);
 
@@ -35,11 +44,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	printf("Printing from the producer with pid %d\n", getpid());
+	printf("P: spawned pid %d\n", getpid());
 	
 	int semval;
 	sem_getvalue(producer_sem,&semval);
-	printf("producer sem val is %i\n",semval);
+	printf("P: sem %i\n",semval);
 	
 	
 	while(1)
@@ -47,21 +56,21 @@ int main(int argc, char **argv) {
 	  
 	  if(sem_trywait(producer_sem) == -1)
 	  {
-	    printf("sem toggle in producer exiting while loop\n");
+	    printf("P: sem toggle\n");
 	    break; 
 	  }
 	  
-	 printf("Printing from the producer with pid %d inside while loop \n", getpid());
+	 printf("P: pid %d to send \n", getpid());
 
-	  int message = 5;
+	  int message = produce_message(pid,producerCount);
 	  if (mq_send(queue_descriptor, (char*) &message, sizeof(int), 0) == -1) 
 	  {
-		printf("failed to send message %s \n", strerror(errno));
+		printf("P: pid %d send failed %s \n",getpid(), strerror(errno));
 		return 1;
 
 	  }else
 	  {
-	      printf("send message %i\n",message);
+	      printf("P: pid %d sent %i\n",getpid(),message);
 	  }
 	  
 	}
@@ -76,9 +85,16 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
-    printf("exiting the producer with pid %d\n", getpid());
+    printf("P: pid %d exiting\n", getpid());
 
 
 	return 0;
 
+}
+
+int produce_message(int pid,int numProducers)
+{
+    int i = (rand() % 80) + 1;
+	int value = (numProducers * i) + pid;
+	return value;
 }

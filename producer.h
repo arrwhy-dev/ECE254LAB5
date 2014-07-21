@@ -34,10 +34,12 @@ int process_arguments(int argc, char* argv[], int * queue_size,
 
 //spawns the child process and sets the time before forking,
 //which is the last parameter.
-int spawn_child(char*, char **);
+int spawn_child(char*, char **,int,int);
 
 //The main part of the producer code
 //this creates elements and sends them to the msg queue.
 void produce_and_send_elements(int, mqd_t);
+
+int produce_message(int pid,int numProducers);
 
 #endif /* PRODUCER_H_ */
