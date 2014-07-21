@@ -18,7 +18,9 @@ pthread_t spawn_producer();
 void* producer(void* unused);
 
 void add_to_buffer();
-pthread_t spawn_consumer();
+pthread_t spawn_child();
+
+double get_time_in_seconds();
 
 void* consumer(void* unused);
 

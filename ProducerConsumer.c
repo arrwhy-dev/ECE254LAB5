@@ -13,6 +13,7 @@
 #include <semaphore.h>
 #include <time.h>
 #include <stdlib.h>
+#include <math.h>
 #include "producerConsumer.h"
 
 struct queue_element {
@@ -45,7 +46,7 @@ int main(int argc, char **argv) {
 
 	sem_init(&buff_lock, 0, 1);
 	sem_init(&count, 0, 0);
-	sem_init(&buff_size, 0, 3);
+	sem_init(&buff_size, 0, buffer_size);
 	sem_init(&prod_num, 0, production_count);
 	sem_init(&con_num, 0, production_count);
 
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
 
 	int producer_id;
 
+	double time_before_first_thread_created = get_time_in_seconds();
 	for (producer_id = 0; producer_id < producer_count; ++producer_id) {
 		producer_ids[producer_id] = spawn_producer(producer_id);
 	}
@@ -61,7 +63,7 @@ int main(int argc, char **argv) {
 	int consumer_id;
 
 	for (consumer_id = 0; consumer_id < consumer_count; ++consumer_id) {
-		consumer_ids[consumer_id] = spawn_consumer(consumer_id);
+		consumer_ids[consumer_id] = spawn_child(consumer_id);
 	}
 
 	int i;
@@ -75,6 +77,11 @@ int main(int argc, char **argv) {
 	}
 
 	//clean up semaphores
+	sem_destroy(&buff_lock);
+	sem_destroy(&count);
+	sem_destroy(&buff_size);
+	sem_destroy(&prod_num);
+	sem_destroy(&con_num);
 
 	return 0;
 }
@@ -96,7 +103,7 @@ pthread_t spawn_producer(int producer_id) {
 	return p_id;
 }
 
-pthread_t spawn_consumer(int consumer_id) {
+pthread_t spawn_child(int consumer_id) {
 	pthread_t p_id;
 	pthread_create(&p_id, NULL, &consumer, &consumer_id);
 	return p_id;
@@ -105,7 +112,6 @@ pthread_t spawn_consumer(int consumer_id) {
 void add_to_buffer(int * p_id) {
 
 	int i = (rand() % 80) + 1;
-
 	int value = (buffer_size * i) + *p_id;
 
 	printf("Producer %i produced %i\n", *p_id, value);
@@ -114,13 +120,13 @@ void add_to_buffer(int * p_id) {
 		buffer = malloc(sizeof(struct queue_element));
 		buffer->value = value;
 		buffer->next = NULL;
-		printf("producer %i added %i as list head\n",*p_id ,value);
+		printf("producer %i added %i as list head\n", *p_id, value);
 	} else {
-		struct queue_element* next_job = malloc(sizeof(struct queue_element));
-		next_job->next = buffer;
-		next_job->value = value;
-		buffer = next_job;
-		printf("producer %i added %i \n",*p_id, value);
+		struct queue_element* new_head = malloc(sizeof(struct queue_element));
+		new_head->next = buffer;
+		new_head->value = value;
+		buffer = new_head;
+		printf("producer %i added %i \n", *p_id, value);
 
 	}
 }
@@ -132,12 +138,26 @@ void consume_from_buffer(int * c_id) {
 	if (buffer == NULL) {
 		printf("failed to read from queue, queue is empty\n");
 	} else {
+
+		//get the current head of the buffer
 		struct queue_element* current_element;
 		current_element = buffer;
+
 		int val = current_element->value;
+
+		//reassign the buffer head
 		buffer = buffer->next;
+		//delete the previous buffer node.
 		free(current_element);
 		printf("consumer %i consumed %i\n", *c_id, val);
+
+		double root = sqrt(val);
+		double temp = root * root;
+		if(temp == val)
+		{
+			printf("%i %f %i\n",*c_id,root,val);
+		}
+
 	}
 
 }
@@ -160,7 +180,7 @@ void* producer(void* unused) {
 		add_to_buffer(p_id);
 		//trigger unlock
 		sem_post(&buff_lock);
-		//let them now we put some stuff
+		//let them know we put some stuff
 		//in the buffer.
 		sem_post(&count);
 	}
@@ -175,7 +195,7 @@ void* consumer(void* unused) {
 			break;
 		}
 
-		//if more stuff avaliable?
+		//is more stuff avaliable?
 		sem_wait(&count);
 		//trigger the lock
 		sem_wait(&buff_lock);
@@ -184,10 +204,17 @@ void* consumer(void* unused) {
 		consume_from_buffer(c_id);
 		//trigger the unlock
 		sem_post(&buff_lock);
-		//let them know theres space
+		//let producers know theres space
 		//for more stuff
 		sem_post(&buff_size);
 	}
 	return NULL;
+}
+
+double get_time_in_seconds() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec + tv.tv_usec / 1000000.0);
+
 }
 
