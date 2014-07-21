@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   	int pid = atoi(argv[1]);
 	int producer_count = atoi(argv[2]);
 	
-	printf("P: assigned pid  %d to %i \n",pid,getpid());
+	//printf("P: assigned pid  %d to %i \n",pid,getpid());
 
 	mqd_t queue_descriptor;
 	queue_descriptor = mq_open(queue_name, O_RDWR);
@@ -44,11 +44,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	printf("P: spawned pid %d\n", getpid());
+	//printf("P: spawned pid %d\n", getpid());
 	
 	int semval;
 	sem_getvalue(producer_sem,&semval);
-	printf("P: sem %i\n",semval);
+	//printf("P: sem %i\n",semval);
 	
 	int counter =0;
 	while(1)
@@ -56,11 +56,11 @@ int main(int argc, char **argv) {
 	  
 	  if(sem_trywait(producer_sem) == -1)
 	  {
-	    printf("P: sem toggle\n");
+	  //  printf("P: sem toggle\n");
 	    break; 
 	  }
 	  
-	 printf("P: pid %d to send \n", getpid());
+	// printf("P: pid %d to send \n", getpid());
 
 	  int message = produce_message(pid,producer_count,counter);
 	  if (mq_send(queue_descriptor, (char*) &message, sizeof(int), 0) == -1) 
@@ -70,8 +70,9 @@ int main(int argc, char **argv) {
 
 	  }else
 	  {
-	      printf("P: pid %d sent %i\n",getpid(),message);
+	  //    printf("P: pid %d sent %i\n",getpid(),message);
 	  }
+	  ++counter;
 	  
 	}
 
@@ -85,7 +86,7 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
-    printf("P: pid %d exiting\n", getpid());
+    //printf("P: pid %d exiting\n", getpid());
 
 
 	return 0;
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
 
 int produce_message(int pid,int numProducers,int value)
 {
-    int i = (rand() % 80) + 1;
+        int i = (rand() % 80) + 1;
 	int message = (numProducers * value) + pid;
 	return message;
 }
