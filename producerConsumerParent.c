@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
 	}
 
 	//used for debugging
+	/*
 	int semval1;
 	int semval2;
 	
@@ -77,7 +78,7 @@ int main(int argc, char **argv) {
 	sem_getvalue(consumer_sem,&semval2);
 	printf("the producer sem val is %i\n",semval1);
 	printf(" the consumer sem val is %i\n",semval2);
-	
+	*/
 
     double time_before_first_fork = get_time_in_seconds();
 
@@ -100,7 +101,7 @@ int main(int argc, char **argv) {
 	while ((pid = wait(&status)) != -1)	
 	{
 		//for debugging
-		fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status);
+		//fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
 	}
 	
 	double time_after_last_consumed = get_time_in_seconds();
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
 		exit(3);
 	}
 
-	printf("the parent killed the queue!\n");
+	//printf("the parent killed the queue!\n");
 	if (sem_close(producer_sem) == -1) {
 		perror("producer semaphore failed to close");
 		exit(2);
@@ -142,7 +143,7 @@ int main(int argc, char **argv) {
 		exit(3);
 	}
 	
-	printf("Parent exited\n");
+	//printf("Parent exited\n");
 
 	return 0;
 
