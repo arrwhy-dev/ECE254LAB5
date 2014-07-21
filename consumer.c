@@ -24,8 +24,7 @@ int main(int argc, char **argv) {
 	queue_descriptor = mq_open(queue_name, O_RDONLY);
 
 	if (queue_descriptor == -1) {
-		printf("there was an error opening the queue in the consumer");
-		printf("the error is %s \n", strerror(errno));
+		printf("error opening queue in consumer %s\n",strerror(errno));
 		return 1;
 	}
 
@@ -33,8 +32,7 @@ int main(int argc, char **argv) {
 	consumer_sem = sem_open("consumer_sem", 0);
 
 	if (consumer_sem == SEM_FAILED) {
-		printf("there was an error opening the semaphore in the consumer");
-		printf("the error is %s \n", strerror(errno));
+		printf("error opening semaphore in consumer %s\n",strerror(errno));
 		return 1;
 	}
 

@@ -23,8 +23,7 @@ int main(int argc, char **argv) {
 	queue_descriptor = mq_open(queue_name, O_RDWR);
 
 	if (queue_descriptor == -1) {
-		printf("there was an error opening the queue in the consumer");
-		printf("the error is %s \n", strerror(errno));
+		printf("error opening queue in consumer %s\n",strerror(errno));
 		return 1;
 	}
 
@@ -32,8 +31,7 @@ int main(int argc, char **argv) {
 	producer_sem = sem_open("producer_sem", 0);
 
 	if (producer_sem == SEM_FAILED) {
-		printf("there was an error opening the semaphore in the producer");
-		printf("the error is %s \n", strerror(errno));
+		printf("error opening semaphore in producer %s\n",strerror(errno));
 		return 1;
 	}
 
@@ -78,7 +76,7 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
-         printf("exiting the producer with pid %d\n", getpid());
+    printf("exiting the producer with pid %d\n", getpid());
 
 
 	return 0;
