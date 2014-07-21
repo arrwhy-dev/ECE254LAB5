@@ -21,6 +21,9 @@ int main(int argc, char **argv) {
 
 	int queue_size = atoi(argv[2]);
 	int messages_to_consume = atoi(argv[1]);
+	
+	printf("in the consumer: queue size is %i\n",queue_size);
+	printf("in the consumer: messages to consume is %i\n",messages_to_consume);
 
 	struct mq_attr queue_attributes;
 	queue_attributes.mq_maxmsg = queue_size;
@@ -28,10 +31,7 @@ int main(int argc, char **argv) {
 	queue_attributes.mq_flags = 0;
 
 	mqd_t queue_descriptor;
-	mode_t permissions = S_IRUSR | S_IWUSR;
-
-	queue_descriptor = mq_open(queue_name, O_RDONLY, permissions,
-			&queue_attributes);
+	queue_descriptor = mq_open(queue_name, O_RDONLY);
 
 	if (queue_descriptor == -1) {
 		printf("there was an error opening the queue in the consumer");
@@ -49,23 +49,29 @@ int main(int argc, char **argv) {
 	}
 
 	printf("Printing from the consumer with pid %d\n", getpid());
-	return 0;
+	
 
-	int i;
-	for (i = 1; i <= messages_to_consume; ++i) {
-		int message;
+	while(1)
+	{
+	  
+	  if(sem_trywait(consumption_count))
+	  {
+	    break; 
+	  }
+	
+		 printf("Printing from the consumer with pid %d inside while loop \n", getpid());
 
-		if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)
-				== -1) {
-			printf("failed to receive message %s \n", strerror(errno));
-			return 1;
-
-		} else {
+		  int message;
+		  if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)== -1) 
+		  {
+			  printf("failed to receive message %s \n", strerror(errno));
+			  return 1;
+		} else 
+		{
 			printf("%i is consumed\n", message);
-
 		}
-	}
 
+	}
 	if (mq_close(queue_descriptor) == -1) {
 		perror("mq_close failed");
 		exit(2);

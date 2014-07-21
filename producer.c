@@ -39,37 +39,47 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	sem_t *consumption_count;
-	consumption_count = sem_open("prod_count", 0);
+	sem_t *production_count;
+	production_count = sem_open("prod_count", 0);
 
-	if (consumption_count == SEM_FAILED) {
+	if (production_count == SEM_FAILED) {
 		printf("there was an error opening the semaphore in the producer");
 		printf("the error is %s \n", strerror(errno));
 		return 1;
 	}
 
-	printf("Printing from the consumer with pid %d\n", getpid());
-	return 0;
+	printf("Printing from the producer with pid %d\n", getpid());
+	
+	while(1)
+	{
+	  
+	  if(sem_trywait(production_count))
+	  {
+	    break; 
+	  }
+	  
+	 printf("Printing from the producer with pid %d inside while loop \n", getpid());
 
-	int i;
-	for (i = 1; i <= messages_to_consume; ++i) {
-		int message;
+	  int message = 5;
+	  if (mq_send(queue_descriptor, (char*) &message, sizeof(int), 0) == -1) 
+	  {
+		printf("failed to send message %s \n", strerror(errno));
+		return 1;
 
-		if (mq_send(queue_descriptor, (char*) &message, sizeof(int), 0)
-				== -1) {
-			printf("failed to receive message %s \n", strerror(errno));
-			return 1;
-
-		} else {
-			printf("%i is consumed\n", message);
-
-		}
+	  }
+	  
 	}
 
 	if (mq_close(queue_descriptor) == -1) {
 		perror("mq_close failed");
 		exit(2);
 	}
+	
+	if (sem_close(production_count) == -1) {
+		perror("failed to close semaphore in producer");
+		exit(2);
+	}
+	
 
 	return 0;
 

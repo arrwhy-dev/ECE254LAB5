@@ -125,6 +125,7 @@ int main(int argc, char **argv) {
 		exit(3);
 	}
 
+	printf("the parent killed the queue!\n");
 	if (sem_close(production_sem) == -1) {
 		perror("producer semaphore failed to close");
 		exit(2);
