@@ -22,9 +22,7 @@ int main(int argc, char **argv) {
   
   
   
-  	int c_id = atoi(argv[1]);
-	//printf("c: assigned pid  %d to %i \n",c_id,getpid());
-
+  	int c_id = atoi(argv[2]);
 	
 	mqd_t queue_descriptor;
 	queue_descriptor = mq_open(queue_name, O_RDONLY);
@@ -41,41 +39,28 @@ int main(int argc, char **argv) {
 		printf("error opening semaphore in consumer %s\n",strerror(errno));
 		return 1;
 	}
-
-	//printf("C: spawned pid %d\n", getpid());
-	
-	int semval;
-	sem_getvalue(consumer_sem,&semval);
-	
-	//printf("C: sem value  %i\n",semval);
+		
 
 	while(1)
 	{
 	  
 	  if(sem_trywait(consumer_sem) == -1)
 	  {
-	  //  printf("C: sem toggled\n");
 	    break; 
 	  }
-	
-		// printf("C: pid %d to recieve \n", getpid());
-
-		  int message;
-		  if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)== -1) 
-		  {
+	     int message;
+	     if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)== -1) 
+	      {
 			  printf("failed to receive message %s \n", strerror(errno));
 			  return 1;
-		} else 
+	       } else 
 		{
-			//printf("C: pid %i consumed %i \n",getpid(), message);
-			int temp = sqrt(message);
-			
-		        if((temp *temp ) == message)
+			int temp = sqrt(message);	
+		  
+			if((temp *temp ) == message)
 			{
 			  printf("%i %i %i\n",c_id,message,temp);
 			}
-			
-		        fflush(stdout);
 		}
 
 	}
@@ -84,8 +69,6 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 	
-	//printf("C: pid %d exiting\n", getpid());
-
 	return 0;
 
 }
