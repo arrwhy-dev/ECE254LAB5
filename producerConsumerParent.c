@@ -86,11 +86,12 @@ int main(int argc, char **argv) {
 	for (i = 0; i < num_producers; ++i) {
 
 		pid_t child_pid = spawn_child("./producer", argv);
-
+/*
 		if (child_pid != -1) {
 			pids[i] = child_pid;
 
 		}
+*/
 	}
 
 	//spawn the consumers
@@ -99,10 +100,12 @@ int main(int argc, char **argv) {
 
 		pid_t child_pid = spawn_child("./consumer", argv);
 
+/*
 		if (child_pid != -1) {
 			cids[i] = child_pid;
 
 		}
+*/
 	}
 
 
