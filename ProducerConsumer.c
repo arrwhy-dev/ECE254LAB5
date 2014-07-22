@@ -155,7 +155,7 @@ void* producer(void* producer_params) {
 	int p_id = params->id;
 	
 	int i;
-	for(i = pid;i<production_count;i+=producer_count)
+	for(i = p_id;i<production_count;i+=producer_count)
 	{
 		//do we have room for stuff?
 		sem_wait(&buff_size);
