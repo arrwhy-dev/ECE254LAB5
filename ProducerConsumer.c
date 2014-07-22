@@ -87,10 +87,6 @@ int main(int argc, char **argv) {
 
 	double time_before_first_thread_created = get_time_in_seconds();
 	
-
-
-
-
 	pthread_t p_id [producer_count];
 	pthread_t c_id [consumer_count]; 
 	
@@ -133,10 +129,9 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void add_to_buffer(int * p_id) {
+void add_to_buffer(int * value) {
 
-	int i = (rand() % 80) + 1;
-	int value = (buffer_size * i) + *p_id;
+	
 
 	printf("Producer %i produced %i\n", *p_id, value);
 
@@ -198,7 +193,7 @@ void* producer(void* unused) {
 		// trigger the lock
 		sem_wait(&buff_lock);
 		//put some stuff in the buffer
-		add_to_buffer(pid);
+		add_to_buffer(i);
 		//trigger unlock
 		sem_post(&buff_lock);
 		//let them know we put some stuff
