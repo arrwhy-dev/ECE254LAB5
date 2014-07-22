@@ -55,14 +55,12 @@ sem_t buff_size;
 sem_t prod_num;
 sem_t con_num;
 int buffer_size;
-int num_to_produce;
-int num_producers;
+int production_count;
+int producer_count;
+int consumer_count;
 
 int main(int argc, char **argv) {
-
-	int producer_count;
-	int consumer_count;
-	int production_count;
+		
 
 	if (process_arguments(argc, argv, &buffer_size, &production_count,
 			&producer_count, &consumer_count)) {
@@ -71,9 +69,8 @@ int main(int argc, char **argv) {
 	}
 
 	
-	buffer = NULL;
-	num_to_produce = producer_count;
-        num_producers=num_producers;
+	buffer = NULL;   
+
 	sem_init(&buff_lock, 0, 1);
 	sem_init(&count, 0, 0);
 	sem_init(&buff_size, 0, buffer_size);
@@ -183,11 +180,12 @@ void consume_from_buffer(int * c_id) {
 
 
 void* producer(void* unused) {
+
 	
 	int *pid = (int*)unused;
 	printf("inside producer %i\n",*pid);
 	int i;
-	for(i = *pid;i<num_to_produce;i=i+num_producers)
+	for(i = *pid;i<production_count;i=i+producer_count)
 	{
 		//do we have room for stuff?
 		sem_wait(&buff_size);
