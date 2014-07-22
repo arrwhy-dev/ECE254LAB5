@@ -22,6 +22,10 @@ struct queue_element {
 	struct queue_element* next;
 };
 
+struct thread_params{
+  int id;
+};
+
 void* testone(void* unused)
 {
 
@@ -84,34 +88,43 @@ int main(int argc, char **argv) {
 
 	double time_before_first_thread_created = get_time_in_seconds();
 	
-	pthread_t p_id [producer_count];
-	pthread_t c_id [consumer_count]; 
+	pthread_t p_thread_id [producer_count];
+	pthread_t c_thread_id [consumer_count]; 
+	
+	struct thread_params p_id [producer_count];
+	struct thread_params c_id [consumer_count];
 	
 	int i ;
 	for(i=0; i<producer_count;++i)
 	{
-	  pthread_create(&(p_id[i]), NULL, &producer, &i);
+	  p_id[i].id = i;
+	  pthread_create(&(p_thread_id[i]), NULL, &producer, &(p_id[i]));
 	}
+	
 	
 	int c;
 	for(c=0;c<consumer_count;++c)
 	{
-	    pthread_create(&(c_id[c]), NULL, &consumer, &c);
+	  c_id[c].id = c;
+	  pthread_create(&(c_thread_id[c]), NULL, &consumer, &(c_id[c]));
 	}
+	
+	
 	
 	int j;
 	for(j=0;j<producer_count;++j)
 	{
-	    pthread_join(p_id[j],NULL);
+	    pthread_join(p_thread_id[j],NULL);
 	}
+	
 	
 	int k;
 	for(k=0;k<consumer_count;++k)
 	{
-	    pthread_join(c_id[k],NULL);
+	    pthread_join(c_thread_id[k],NULL);
 	}
 
-
+	
 
 	//clean up semaphores
 	sem_destroy(&buff_lock);
@@ -142,7 +155,7 @@ void add_to_buffer(int pid, int value) {
 		new_head->next = buffer;
 		new_head->value = value;
 		buffer = new_head;
-		printf("producer % added %i \n", pid, value);
+		printf("producer %i added %i \n", pid, value);
 
 	}
 }
@@ -152,7 +165,7 @@ void add_to_buffer(int pid, int value) {
 void consume_from_buffer(int * c_id) {
 
 	if (buffer == NULL) {
-		printf("failed to read from queue, queue is empty\n");
+		//printf("failed to read from queue, queue is empty\n");
 	} else {
 
 		//get the current head of the buffer
@@ -165,7 +178,7 @@ void consume_from_buffer(int * c_id) {
 		buffer = buffer->next;
 		//delete the previous buffer node.
 		free(current_element);
-		printf("consumer %i consumed %i\n", *c_id, val);
+		//printf("consumer %i consumed %i\n", *c_id, val);
 
 		int root = sqrt(val);
 		int temp = root * root;
@@ -183,7 +196,7 @@ void* producer(void* unused) {
 
 	
 	int *pid = (int*)unused;
-	printf("inside producer %i\n",*pid);
+	//printf("inside producer %i\n",*pid);
 	int i;
 	for(i = *pid;i<production_count;i=i+producer_count)
 	{
