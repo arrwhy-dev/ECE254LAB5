@@ -25,12 +25,26 @@ struct queue_element {
 void* testone(void* unused)
 {
 
-	while(1)
+	int q;
+	for(q=0;q<10;++q)
 	{
-		printf("I am thread %i\n",getpid());
-		sleep(2);
+		printf("producer with %i\n",pthread_self());
+
 	}
 
+}
+
+
+void* testtwo(void* unused)
+{
+  
+  int l;
+ for(l=0;l<10;++l)
+ {
+      printf("consumer with %i\n",pthread_self());
+    
+ }
+  
 }
 
 struct queue_element* buffer;
@@ -41,6 +55,8 @@ sem_t buff_size;
 sem_t prod_num;
 sem_t con_num;
 int buffer_size;
+int num_to_produce;
+int num_producers;
 
 int main(int argc, char **argv) {
 
@@ -54,8 +70,10 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	
 	buffer = NULL;
-
+	num_to_produce = producer_count;
+        num_producers=num_producers;
 	sem_init(&buff_lock, 0, 1);
 	sem_init(&count, 0, 0);
 	sem_init(&buff_size, 0, buffer_size);
@@ -69,29 +87,39 @@ int main(int argc, char **argv) {
 
 	double time_before_first_thread_created = get_time_in_seconds();
 	
-	for (producer_id = 0; producer_id < producer_count; ++producer_id) {
-		producer_ids[producer_id] = spawn_producer(producer_id);
-		printf("created producer with pid %i\n",producer_ids[producer_id]);
-	}
 
-/*
-	int consumer_id;
 
-	for (consumer_id = 0; consumer_id < consumer_count; ++consumer_id) {
-		consumer_ids[consumer_id] = spawn_child(consumer_id);
-	}
-*/
 
-	int i;
-	for (i = 0; i < producer_count; ++i) {
-		pthread_join(producer_ids[i], NULL);
+
+	pthread_t p_id [producer_count];
+	pthread_t c_id [consumer_count]; 
+	
+	int i ;
+	for(i=0; i<producer_count;++i)
+	{
+	  pthread_create(&(p_id[i]), NULL, &producer, &i);
 	}
-/*
+	
+	int c;
+	for(c=0;c<consumer_count;++c)
+	{
+	    pthread_create(&(c_id[c]), NULL, &consumer, &c);
+	}
+	
 	int j;
-	for (j = 0; j < consumer_count; ++j) {
-		pthread_join(consumer_ids[j], NULL);
+	for(j=0;j<producer_count;++j)
+	{
+	    pthread_join(p_id[j],NULL);
 	}
-*/
+	
+	int k;
+	for(k=0;k<consumer_count;++k)
+	{
+	    pthread_join(c_id[k],NULL);
+	}
+
+
+
 	//clean up semaphores
 	sem_destroy(&buff_lock);
 	sem_destroy(&count);
@@ -104,25 +132,6 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
-
-
-pthread_t spawn_producer(int producer_id) {
-
-	pthread_t p_id;
-	pthread_create(&p_id, NULL, &testone, &producer_id);
-	return p_id;
-}
-
-pthread_t spawn_child(int consumer_id) {
-	pthread_t p_id;
-	pthread_create(&p_id, NULL, &consumer, &consumer_id);
-	return p_id;
-}
-
-
-
-
-
 
 void add_to_buffer(int * p_id) {
 
@@ -179,21 +188,17 @@ void consume_from_buffer(int * c_id) {
 
 
 void* producer(void* unused) {
-	srand(time(NULL));
-	while (1) {
 	
-		//do we need to make more stuff?
-		if (sem_trywait(&prod_num)) {
-			break;
-		}
-
+	int *pid = (int*)unused;
+	int i;
+	for(i = *pid;i<num_to_produce;i=i+num_producers)
+	{
 		//do we have room for stuff?
 		sem_wait(&buff_size);
 		// trigger the lock
 		sem_wait(&buff_lock);
 		//put some stuff in the buffer
-		int * p_id = (int*) unused;
-		add_to_buffer(p_id);
+		add_to_buffer(pid);
 		//trigger unlock
 		sem_post(&buff_lock);
 		//let them know we put some stuff
