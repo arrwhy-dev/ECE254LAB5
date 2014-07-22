@@ -94,7 +94,7 @@ int buffer_size;
 
 	double time_after_last_consumed = get_time_in_seconds();
 	double execution_time = time_after_last_consumed - time_before_first_thread_created;
-	
+
 	printf("System execution time: %f seconds\n",execution_time);
 
 	
@@ -143,7 +143,7 @@ void consume_from_buffer(int * c_id) {
 		int root = sqrt(val);
 		if(val == (root*root))
 		{
-			printf("%i %i %i\n",*c_id,root,val);
+			printf("%i %i %i\n",*c_id,val,root);
 		}
 	}
 
