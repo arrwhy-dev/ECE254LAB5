@@ -26,45 +26,19 @@ struct thread_params{
   int id;
 };
 
-void* testone(void* unused)
-{
-
-	int q;
-	for(q=0;q<10;++q)
-	{
-		printf("producer with %i\n",pthread_self());
-
-	}
-
-}
-
-
-void* testtwo(void* unused)
-{
-  
-  int l;
- for(l=0;l<10;++l)
- {
-      printf("consumer with %i\n",pthread_self());
-    
- }
-  
-}
-
 struct queue_element* buffer;
 
 sem_t buff_lock;
 sem_t count;
 sem_t buff_size;
-sem_t prod_num;
 sem_t con_num;
-int buffer_size;
 int production_count;
 int producer_count;
-int consumer_count;
 
 int main(int argc, char **argv) {
 		
+int consumer_count;
+int buffer_size;
 
 	if (process_arguments(argc, argv, &buffer_size, &production_count,
 			&producer_count, &consumer_count)) {
@@ -78,23 +52,17 @@ int main(int argc, char **argv) {
 	sem_init(&buff_lock, 0, 1);
 	sem_init(&count, 0, 0);
 	sem_init(&buff_size, 0, buffer_size);
-	sem_init(&prod_num, 0, production_count);
 	sem_init(&con_num, 0, production_count);
 
-	pthread_t producer_ids[producer_count];
-	pthread_t consumer_ids[consumer_count];
-
-	int producer_id;
-
-	double time_before_first_thread_created = get_time_in_seconds();
-	
 	pthread_t p_thread_id [producer_count];
 	pthread_t c_thread_id [consumer_count]; 
 	
 	struct thread_params p_id [producer_count];
 	struct thread_params c_id [consumer_count];
+
+	double time_before_first_thread_created = get_time_in_seconds();
 	
-	int i ;
+	int i;
 	for(i=0; i<producer_count;++i)
 	{
 	  p_id[i].id = i;
@@ -130,7 +98,6 @@ int main(int argc, char **argv) {
 	sem_destroy(&buff_lock);
 	sem_destroy(&count);
 	sem_destroy(&buff_size);
-	sem_destroy(&prod_num);
 	sem_destroy(&con_num);
 	
 	
@@ -139,33 +106,24 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void add_to_buffer(int pid, int value) {
-
-	
-
-	printf("Producer %i produced %i\n", pid, value);
+void add_to_buffer(int value) {
 
 	if (buffer == NULL) {
 		buffer = malloc(sizeof(struct queue_element));
 		buffer->value = value;
 		buffer->next = NULL;
-		printf("producer %i added %i as list head\n", pid, value);
 	} else {
 		struct queue_element* new_head = malloc(sizeof(struct queue_element));
 		new_head->next = buffer;
 		new_head->value = value;
 		buffer = new_head;
-		printf("producer %i added %i \n", pid, value);
-
 	}
 }
-
-//This is called from the consumer.
 
 void consume_from_buffer(int * c_id) {
 
 	if (buffer == NULL) {
-		//printf("failed to read from queue, queue is empty\n");
+		printf("error failed to read from queue, queue is empty\n");
 	} else {
 
 		//get the current head of the buffer
@@ -178,34 +136,33 @@ void consume_from_buffer(int * c_id) {
 		buffer = buffer->next;
 		//delete the previous buffer node.
 		free(current_element);
-		//printf("consumer %i consumed %i\n", *c_id, val);
+		
 
 		int root = sqrt(val);
-		int temp = root * root;
-		if(temp == val)
+		if(val == (root*root))
 		{
 			printf("%i %i %i\n",*c_id,root,val);
 		}
-
 	}
 
 }
 
 
-void* producer(void* unused) {
+void* producer(void* producer_params) {
 
 	
-	int *pid = (int*)unused;
-	//printf("inside producer %i\n",*pid);
+	struct thread_params *params = (struct thread_params*)producer_params;
+	int p_id = params->id;
+	
 	int i;
-	for(i = *pid;i<production_count;i=i+producer_count)
+	for(i = pid;i<production_count;i+=producer_count)
 	{
 		//do we have room for stuff?
 		sem_wait(&buff_size);
 		// trigger the lock
 		sem_wait(&buff_lock);
 		//put some stuff in the buffer
-		add_to_buffer(*pid,i);
+		add_to_buffer(i);
 		//trigger unlock
 		sem_post(&buff_lock);
 		//let them know we put some stuff
@@ -216,23 +173,22 @@ void* producer(void* unused) {
 	return NULL;
 }
 
-void* consumer(void* unused) {
+void* consumer(void* consumer_params) {
+
+	struct thread_params *params = (struct thread_params*) consumer_params;
+	int c_id = params->id;
 
 	while (1) {
-	  
-	
 		//are we expecting more stuff?
 		if (sem_trywait(&con_num)) {
 			break;
 		}
-
 		//is more stuff avaliable?
 		sem_wait(&count);
 		//trigger the lock
 		sem_wait(&buff_lock);
 		//take some stuff
-		int* c_id = (int*) unused;
-		consume_from_buffer(c_id);
+		consume_from_buffer(&c_id);
 		//trigger the unlock
 		sem_post(&buff_lock);
 		//let producers know theres space
