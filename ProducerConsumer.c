@@ -99,9 +99,6 @@ int buffer_size;
 	sem_destroy(&count);
 	sem_destroy(&buff_size);
 	sem_destroy(&con_num);
-	
-	
-	printf("main thread exited\n");
 
 	return 0;
 }
