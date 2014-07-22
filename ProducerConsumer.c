@@ -129,23 +129,23 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void add_to_buffer(int * value) {
+void add_to_buffer(int pid, int value) {
 
 	
 
-	printf("Producer %i produced %i\n", *p_id, value);
+	printf("Producer %i produced %i\n", pid, value);
 
 	if (buffer == NULL) {
 		buffer = malloc(sizeof(struct queue_element));
 		buffer->value = value;
 		buffer->next = NULL;
-		printf("producer %i added %i as list head\n", *p_id, value);
+		printf("producer %i added %i as list head\n", pid, value);
 	} else {
 		struct queue_element* new_head = malloc(sizeof(struct queue_element));
 		new_head->next = buffer;
 		new_head->value = value;
 		buffer = new_head;
-		printf("producer %i added %i \n", *p_id, value);
+		printf("producer % added %i \n", pid, value);
 
 	}
 }
@@ -185,6 +185,7 @@ void consume_from_buffer(int * c_id) {
 void* producer(void* unused) {
 	
 	int *pid = (int*)unused;
+	printf("inside producer %i\n",*pid);
 	int i;
 	for(i = *pid;i<num_to_produce;i=i+num_producers)
 	{
@@ -193,7 +194,7 @@ void* producer(void* unused) {
 		// trigger the lock
 		sem_wait(&buff_lock);
 		//put some stuff in the buffer
-		add_to_buffer(i);
+		add_to_buffer(*pid,i);
 		//trigger unlock
 		sem_post(&buff_lock);
 		//let them know we put some stuff
