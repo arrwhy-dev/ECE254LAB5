@@ -28,4 +28,7 @@ extern const char* consumer_sem_name;
 int process_arguments(int argc, char* argv[], int * queue_size,
 		int * message_count, int * producer_count, int * consumer_count);
 
+//This method provides a convenient way to get the current time in seconds
+double get_time_in_seconds();
+
 #endif

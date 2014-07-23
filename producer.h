@@ -15,8 +15,6 @@
 #ifndef PRODUCER_H_
 #define PRODUCER_H_
 
-//This method provides a convenient way to get the current time in seconds
-double get_time_in_seconds();
 
 //spawns the child process and sets the time before forking,
 //which is the last parameter.
