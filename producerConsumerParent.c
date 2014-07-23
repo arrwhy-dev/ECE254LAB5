@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	}
 
 
-	sem_t *consumer_sem = sem_open("consumer_sem", O_RDWR | O_CREAT,
+	sem_t *consumer_sem = sem_open("consumer_sem2", O_RDWR | O_CREAT,
 			permissions, message_count);
 
 	if (consumer_sem == SEM_FAILED) {
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 	}
 
 
-	if (sem_unlink("consumer_sem") == -1) {
+	if (sem_unlink("consumer_sem2") == -1) {
 		perror("failed to unlink consumer semaphore");
 		exit(3);
 	}

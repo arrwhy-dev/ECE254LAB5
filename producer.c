@@ -1,4 +1,4 @@
-[ryogarat@ecelinux5 tools]$ cat producer.c
+
 /*
  * producer.c
  * ECE254 Group 01
