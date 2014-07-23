@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 
 	//open a descriptor for the consumer semeaphore.
 	sem_t *consumer_sem;
-	consumer_sem = sem_open("consumer_sem2", 0);
+	consumer_sem = sem_open("consumer_sem_t", 0);
 
 	if (consumer_sem == SEM_FAILED) {
 		printf("error opening semaphore in consumer %s\n", strerror(errno));
