@@ -36,8 +36,9 @@ int main(int argc, char **argv) {
 
 	//validate the command line arguments
 	if (process_arguments(argc, argv, &queue_size, &message_count,
-			&num_producers, &num_consumers)) {
-		printf("Invalid arguments\n");
+			&num_producers, &num_consumers)) 
+	{
+		printf("Invalid  arguments provided\n");
 		return 1;
 	}
 
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
 	//this semaphore is used as a counting semaphore
 	//it is used by the consumers to determine wether or not
 	//they should continue consumption
-	sem_t *consumer_sem = sem_open("consumer_sem_t", O_RDWR | O_CREAT,
+	sem_t *consumer_sem = sem_open(consumer_sem_name, O_RDWR | O_CREAT,
 			permissions, message_count);
 
 	if (consumer_sem == SEM_FAILED) {
@@ -118,7 +119,7 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 
-	if (sem_unlink("consumer_sem_t") == -1) {
+	if (sem_unlink(consumer_sem_name) == -1) {
 		perror("failed to unlink consumer semaphore");
 		exit(3);
 	}
@@ -133,7 +134,7 @@ int spawn_child(char* program, char **arg_list, int p_id, int childCount) {
 
 	char pid[15];
 	sprintf(pid, "%d", p_id);
-	arg_list[2] = &pid;
+	arg_list[2] = pid;
 
 	pid_t child_pid;
 	child_pid = fork();

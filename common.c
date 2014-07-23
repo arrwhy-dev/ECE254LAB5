@@ -15,6 +15,8 @@
 
 //constant queue_name for both producer and consumer.
 const char* queue_name = "/mailbox_ece254_ryogarat";
+//name is unique to avoid conflicting with other students.
+const char* consumer_sem_name="named_sem_ryogarat_cons_sem";
 
 int process_arguments(int argc, char* argv[], int * queue_size,
 		int * message_count, int * producer_count, int * consumer_count) {
