@@ -140,8 +140,8 @@ int spawn_child(char* program, char **arg_list, int p_id, int childCount) {
 	//add the assigned id to arg_list.
 	//this is the p_id for the producer and c_id for the consumer.
 	char assigned_id[15];
-	sprintf(&assigned_id, "%d", p_id);
-	arg_list[2] = &assigned_id;
+	sprintf(assigned_id, "%d", p_id);
+	arg_list[2] = assigned_id;
 
 	pid_t child_pid;
 	child_pid = fork();
