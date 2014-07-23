@@ -1,27 +1,23 @@
 /*
  * producerConsumer.h
+ * ECE254 Group 01
+ * By : Rushan Yogaratnam and Ameen Patel
+ * University of Waterloo Computer Engineering
+ * Spring 2014
  *
- *  Created on: Jul 19, 2014
- *      Author: rushan
+ *
+ * These are a bunch of helper functions.
+ * The are just functions which
+ * make the code cleaner by providing abstraction.
+ *
  */
-
 #ifndef PRODUCERCONSUMER_H_
 #define PRODUCERCONSUMER_H_
 
-int process_arguments(int argc, char* argv[], int * queue_size,
-		int * production_count, int * producer_count, int * consumer_count);
-
-void create_buffer(int bufferSize);
-
-pthread_t spawn_producer();
-
+//Thread function for the producer threads
 void* producer(void* unused);
 
-void add_to_buffer();
-pthread_t spawn_child();
-
-double get_time_in_seconds();
-
+//Thread functionf for the consumer threads
 void* consumer(void* unused);
 
 #endif /* PRODUCERCONSUMER_H_ */
