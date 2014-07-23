@@ -60,8 +60,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//this semaphore is used as a counting semaphore
-	//it is used by the consumers to determine wether or not
+	//used by the consumers to determine wether or not
 	//they should continue consumption
 	sem_t *consumer_sem = sem_open(consumer_sem_name, O_RDWR | O_CREAT,
 			permissions, message_count);
@@ -132,6 +131,8 @@ int spawn_child(char* program, char **arg_list, int p_id, int childCount) {
 
 	arg_list[0] = program;
 
+	//as part of the arguments to the exec'd process
+	//send the assigned ID, p_id for producers c_id for consumers.
 	char pid[15];
 	sprintf(pid, "%d", p_id);
 	arg_list[2] = pid;

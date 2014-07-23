@@ -21,8 +21,8 @@ const char* consumer_sem_name = "named_sem_ryogarat_cons_sem";
 
 
 
-//implemenation of process_arguemnts, used to ensure
-//the command line arguments are within the right range.
+//implemenation of process_arguments, used to ensure
+//the command line arguments are valid.
 int process_arguments(int argc, char* argv[], int * queue_size,
 		int * message_count, int * producer_count, int * consumer_count) {
 

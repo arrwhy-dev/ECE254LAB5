@@ -139,7 +139,6 @@ int main(int argc, char **argv) {
  the linked list and sets the value of the head.
  All further calls appends the values to the head
  of the linked list.
-
  */
 void add_to_buffer(int value) {
 

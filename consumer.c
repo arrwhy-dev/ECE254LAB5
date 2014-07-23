@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 	//the assigned consumer id, between 0 and C-1.
 	int c_id = atoi(argv[2]);
 
-	//open the queue and perform error handlind
+	//open the queue and perform error handling
 
 	mqd_t queue_descriptor;
 	queue_descriptor = mq_open(queue_name, O_RDONLY);
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//open a descriptor for the consumer semeaphore.
+	//open a descriptor for the consumer semaphore.
 	sem_t *consumer_sem;
 	consumer_sem = sem_open(consumer_sem_name, 0);
 
@@ -47,8 +47,8 @@ int main(int argc, char **argv) {
 	}
 
 	//infinite loop and keep consuming elements.
-	//the consumer exits this loop when the consumer_sem
-	//indicated that there are no more items to be expected.
+	//the consumer exits when consumer_sem
+	//indicates that there are no more items to be expected.
 	while (1) {
 
 		//decrement the consumer semaphore.
@@ -61,21 +61,21 @@ int main(int argc, char **argv) {
 
 		//recieve a message, this will block if the queue is empty.
 		int message;
-		if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)
-				== -1) {
+		if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)== -1) {
+
 			printf("failed to receive message %s \n", strerror(errno));
 			return 1;
 		} else {
-			int temp = sqrt(message);
+			int root = sqrt(message);
 
-			if ((temp * temp) == message) {
-				printf("%i %i %i\n", c_id, message, temp);
+			if ((root * root) == message) {
+				printf("%i %i %i\n", c_id, message, root);
 			}
 		}
 
 	}
 
-	//closet he descriptor to the queue.
+	//close the descriptor to the queue.
 	if (mq_close(queue_descriptor) == -1) {
 		perror("mq_close failed");
 		exit(2);
