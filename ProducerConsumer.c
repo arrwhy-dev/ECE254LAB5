@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 	sem_init(&buff_lock, 0, 1);
 	sem_init(&count, 0, 0);
 	sem_init(&buff_size, 0, buffer_size);
-	sem_init(&con_num, 0, num_producers);
+	sem_init(&con_num, 0, num_messages);
 
 	//array of id's used for joining 
 	pthread_t p_thread_id[num_producers];
