@@ -8,20 +8,11 @@
 #ifndef PRODUCERCONSUMER_H_
 #define PRODUCERCONSUMER_H_
 
-int process_arguments(int argc, char* argv[], int * queue_size,
-		int * production_count, int * producer_count, int * consumer_count);
-
-void create_buffer(int bufferSize);
-
-pthread_t spawn_producer();
-
 void* producer(void* unused);
-
-void add_to_buffer();
-pthread_t spawn_child();
-
-double get_time_in_seconds();
-
 void* consumer(void* unused);
+void add_to_buffer();
+void consume_from_buffer(int * c_id);
+void add_to_buffer(int value);
+pthread_t spawn_child();
 
 #endif /* PRODUCERCONSUMER_H_ */
