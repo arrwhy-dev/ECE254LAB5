@@ -70,33 +70,32 @@ int main(int argc, char **argv) {
 	}
 
 	//get time before first fork
-    double time_before_first_fork = get_time_in_seconds();
+	double time_before_first_fork = get_time_in_seconds();
 
-    //spawn producer processes
+	//spawn producer processes
 	int i;
 	for (i = 0; i < num_producers; ++i) {
 
-	    spawn_child("./producer", argv,i,num_producers);
+		spawn_child("./producer", argv, i, num_producers);
 	}
 
 	//spawn consumer processes
 	int j;
 	for (j = 0; j < num_consumers; ++j) {
 
-	    spawn_child("./consumer", argv,j,num_consumers);
+		spawn_child("./consumer", argv, j, num_consumers);
 	}
-
 
 	int status, pid;
 	//busy loop and wait for all of the child
 	//processes to complete execution.
-	while ((pid = wait(&status)) != -1){}
-	
-	
+	while ((pid = wait(&status)) != -1) {
+	}
+
 	double time_after_last_consumed = get_time_in_seconds();
-	
+
 	double execution_time = time_after_last_consumed - time_before_first_fork;
-	printf("System execution time: %f seconds\n",execution_time);
+	printf("System execution time: %f seconds\n", execution_time);
 
 	//Tidy up queues and semaphores
 
@@ -123,29 +122,27 @@ int main(int argc, char **argv) {
 		perror("failed to unlink consumer semaphore");
 		exit(3);
 	}
-	
+
 	return 0;
 
 }
 
-
 /*
-	Function simply forks the current process and exec's the program
-	given in the parameter 'char* program'.
-*/
+ Function simply forks the current process and exec's the program
+ given in the parameter 'char* program'.
+ */
 
-int spawn_child(char* program, char **arg_list,int p_id,int childCount) {
+int spawn_child(char* program, char **arg_list, int p_id, int childCount) {
 
 	//set the program name
 	arg_list[0] = program;
 
 	//add the assigned id to arg_list.
 	//this is the p_id for the producer and c_id for the consumer.
-	char assigned_id [15];
-	sprintf(assigned_id,"%d",p_id);
+	char assigned_id[15];
+	sprintf(assigned_id, "%d", p_id);
 	arg_list[2] = assigned_id;
-	
-	
+
 	pid_t child_pid;
 	child_pid = fork();
 
@@ -163,9 +160,9 @@ int spawn_child(char* program, char **arg_list,int p_id,int childCount) {
 
 }
 /*
-	Function simply wraps the gettimeofday() function call and
-	provides to output in seconds.
-*/
+ Function simply wraps the gettimeofday() function call and
+ provides to output in seconds.
+ */
 double get_time_in_seconds() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);

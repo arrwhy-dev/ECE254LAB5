@@ -23,17 +23,16 @@
 #include "common.h"
 
 int main(int argc, char **argv) {
-  
-  
-    //the assigned consumer id, between 0 and C-1.
-  	int c_id = atoi(argv[2]);
-	
+
+	//the assigned consumer id, between 0 and C-1.
+	int c_id = atoi(argv[2]);
+
 	//open the queue and perform error handlind
 	mqd_t queue_descriptor;
 	queue_descriptor = mq_open(queue_name, O_RDONLY);
 
 	if (queue_descriptor == -1) {
-		printf("error opening queue in consumer %s\n",strerror(errno));
+		printf("error opening queue in consumer %s\n", strerror(errno));
 		return 1;
 	}
 
@@ -42,36 +41,32 @@ int main(int argc, char **argv) {
 	consumer_sem = sem_open("consumer_sem", 0);
 
 	if (consumer_sem == SEM_FAILED) {
-		printf("error opening semaphore in consumer %s\n",strerror(errno));
+		printf("error opening semaphore in consumer %s\n", strerror(errno));
 		return 1;
 	}
-		
 
 	//infinite loop and keep consuming elements.
 	//the consumer exits this loop when the consumer_sem
 	//indicated that there are no more items to be expected.
-	while(1)
-	{
-	  //decrement the consumer semaphore.
-	  //when this reaches 0 all callers will
-	  //stop consuming.	
-	  if(sem_trywait(consumer_sem) == -1)
-	  {
-	    break; 
-	  }
-	  //recieve a message, this will block if the queue is empty.
-	     int message;
-	     if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)== -1) 
-	      {
-			  printf("failed to receive message in consumer %s \n", strerror(errno));
-			  return 1;
-	       } else 
-		{
+	while (1) {
+		//decrement the consumer semaphore.
+		//when this reaches 0 all callers will
+		//stop consuming.
+		if (sem_trywait(consumer_sem) == -1) {
+			break;
+		}
+		//recieve a message, this will block if the queue is empty.
+		int message;
+		if (mq_receive(queue_descriptor, (char*) &message, sizeof(int), 0)
+				== -1) {
+			printf("failed to receive message in consumer %s \n",
+					strerror(errno));
+			return 1;
+		} else {
 			//print out if the message is a square number.
-			int root = sqrt(message);	
-			if((root *root ) == message)
-			{
-			  printf("%i %i %i\n",c_id,message,root);
+			int root = sqrt(message);
+			if ((root * root) == message) {
+				printf("%i %i %i\n", c_id, message, root);
 			}
 		}
 
@@ -88,7 +83,7 @@ int main(int argc, char **argv) {
 		perror("sem_close failed in consumer");
 		exit(2);
 	}
-	
+
 	return 0;
 
 }
